@@ -83,9 +83,9 @@ class ToJsonSchema {
     return schema
   }
 
-  getObjectSchema(obj) {
+  getObjectSchema(obj, key) {
     if (this.options.objects.preProcessFnc) {
-      return this.options.objects.preProcessFnc(obj, this.getObjectSchemaDefault)
+      return this.options.objects.preProcessFnc(obj, this.getObjectSchemaDefault, key)
     }
     return this.getObjectSchemaDefault(obj)
   }
@@ -136,7 +136,7 @@ class ToJsonSchema {
     return schema
   }
 
-  getArraySchema(arr) {
+  getArraySchema(arr, key) {
     if (arr.length === 0) { return {type: 'array'} }
     switch (this.options.arrays.mode) {
       case 'all': return this.getArraySchemaMerging(arr)
@@ -162,9 +162,9 @@ class ToJsonSchema {
     return schema
   }
 
-  getStringSchema(value) {
+  getStringSchema(value, key) {
     if (this.options.strings.preProcessFnc) {
-      return this.options.strings.preProcessFnc(value, this.getStringSchemaDefault)
+      return this.options.strings.preProcessFnc(value, this.getStringSchemaDefault, key)
     }
     return this.getStringSchemaDefault(value)
   }
@@ -188,7 +188,7 @@ class ToJsonSchema {
    * @param value
    * @returns {object}
    */
-  getSchema(value) {
+  getSchema(value, key) {
     const type = helpers.getType(value)
     if (!type) {
       throw new Error("Type of value couldn't be determined")
@@ -197,13 +197,13 @@ class ToJsonSchema {
     let schema
     switch (type) {
       case 'object':
-        schema = this.getObjectSchema(value)
+        schema = this.getObjectSchema(value, key)
         break
       case 'array':
-        schema = this.getArraySchema(value)
+        schema = this.getArraySchema(value, key)
         break
       case 'string':
-        schema = this.getStringSchema(value)
+        schema = this.getStringSchema(value, key)
         break
       default:
         schema = {type}
