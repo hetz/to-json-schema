@@ -15,6 +15,7 @@ const defaultOptions = {
   },
   arrays: {
     mode: 'all',
+    preProcessFnc: null,
   },
   objects: {
     preProcessFnc: null,
@@ -65,8 +66,8 @@ class ToJsonSchema {
    * @param {array} arr
    * @returns {object|null}
    */
-  getCommonArrayItemSchema(arr) {
-    const schemas = arr.map(item => this.getSchema(item))
+  getCommonArrayItemSchema(arr, key) {
+    const schemas = arr.map(item => this.getSchema(item, key))
     // schemas.forEach(schema => console.log(JSON.stringify(schema, '\t')))
     return schemas.reduce((acc, current) => helpers.mergeSchemaObjs(acc, current), schemas.pop())
   }
@@ -76,7 +77,7 @@ class ToJsonSchema {
     const objKeys = Object.keys(obj)
     if (objKeys.length > 0) {
       schema.properties = objKeys.reduce((acc, propertyName) => {
-        acc[propertyName] = this.getSchema(obj[propertyName]) // eslint-disable-line no-param-reassign
+        acc[propertyName] = this.getSchema(obj[propertyName], propertyName) // eslint-disable-line no-param-reassign
         return acc
       }, {})
     }
@@ -90,13 +91,13 @@ class ToJsonSchema {
     return this.getObjectSchemaDefault(obj)
   }
 
-  getArraySchemaMerging(arr) {
+  getArraySchemaMerging(arr, key) {
     const schema = {type: 'array'}
     const commonType = getCommonArrayItemsType(arr)
     if (commonType) {
       schema.items = {type: commonType}
       if (commonType !== 'integer' && commonType !== 'number') {
-        const itemSchema = this.getCommonArrayItemSchema(arr)
+        const itemSchema = this.getCommonArrayItemSchema(arr, key)
         if (itemSchema) {
           schema.items = itemSchema
         }
@@ -107,7 +108,7 @@ class ToJsonSchema {
     return schema
   }
 
-  getArraySchemaNoMerging(arr) {
+  getArraySchemaNoMerging(arr, key) {
     const schema = {type: 'array'}
     if (arr.length > 0) {
       schema.items = this.getSchema(arr[0])
@@ -115,7 +116,7 @@ class ToJsonSchema {
     return schema
   }
 
-  getArraySchemaTuple(arr) {
+  getArraySchemaTuple(arr, key) {
     const schema = {type: 'array'}
     if (arr.length > 0) {
       schema.items = arr.map(item => this.getSchema(item))
@@ -123,7 +124,7 @@ class ToJsonSchema {
     return schema
   }
 
-  getArraySchemaUniform(arr) {
+  getArraySchemaUniform(arr, key) {
     const schema = this.getArraySchemaNoMerging(arr)
 
     if (arr.length > 1) {
@@ -138,12 +139,23 @@ class ToJsonSchema {
 
   getArraySchema(arr, key) {
     if (arr.length === 0) { return {type: 'array'} }
-    switch (this.options.arrays.mode) {
-      case 'all': return this.getArraySchemaMerging(arr)
-      case 'first': return this.getArraySchemaNoMerging(arr)
-      case 'uniform': return this.getArraySchemaUniform(arr)
-      case 'tuple': return this.getArraySchemaTuple(arr)
-      default: throw new Error(`Unknown array mode option '${this.options.arrays.mode}'`)
+    if (this.options.arrays.preProcessFnc) {
+      switch (this.options.arrays.mode) {
+        case 'all': return this.options.strings.preProcessFnc(arr, this.getArraySchemaMerging, key, mode)
+        case 'first': return this.options.strings.preProcessFnc(arr, this.getArraySchemaNoMerging, key, mode)
+        case 'uniform': return this.options.strings.preProcessFnc(arr, this.getArraySchemaUniform, key, mode)
+        case 'tuple': return this.options.strings.preProcessFnc(arr, this.getArraySchemaTuple, key, mode)
+        default: throw new Error(`Unknown array mode option '${this.options.arrays.mode}'`)
+      }
+      return
+    }else{
+      switch (this.options.arrays.mode) {
+        case 'all': return this.getArraySchemaMerging(arr, key)
+        case 'first': return this.getArraySchemaNoMerging(arr, key)
+        case 'uniform': return this.getArraySchemaUniform(arr, key)
+        case 'tuple': return this.getArraySchemaTuple(arr, key)
+        default: throw new Error(`Unknown array mode option '${this.options.arrays.mode}'`)
+      }
     }
   }
 
@@ -211,14 +223,14 @@ class ToJsonSchema {
 
 
     if (this.options.postProcessFnc) {
-      schema = this.options.postProcessFnc(type, schema, value, this.commmonPostProcessDefault)
+      schema = this.options.postProcessFnc(type, schema, value, this.commmonPostProcessDefault, key)
     } else {
       schema = this.commmonPostProcessDefault(type, schema, value)
     }
 
     if (type === 'object') {
       if (this.options.objects.postProcessFnc) {
-        schema = this.options.objects.postProcessFnc(schema, value, this.objectPostProcessDefault)
+        schema = this.options.objects.postProcessFnc(schema, value, this.objectPostProcessDefault, key)
       } else {
         schema = this.objectPostProcessDefault(schema, value)
       }
@@ -230,7 +242,7 @@ class ToJsonSchema {
 
 function toJsonSchema(value, options) {
   const tjs = new ToJsonSchema(options)
-  return tjs.getSchema(value)
+  return tjs.getSchema(value, '__ROOT__')
 }
 
 module.exports = toJsonSchema

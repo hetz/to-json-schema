@@ -17,6 +17,7 @@ const helpers = {
     'number', // make sure number is after integer (for proper type detection)
     'string',
     'array',
+    'ObjectId',
     'object',
     'boolean',
     'null',
