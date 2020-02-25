@@ -3,32 +3,32 @@
 // content of this file is extracted from jsonschema source
 
 const types = {
-  string: function testString(instance) {
+  String: function testString(instance) {
     return typeof instance === 'string'
   },
 
-  number: function testNumber(instance) {
+  Number: function testNumber(instance) {
     // isFinite returns false for NaN, Infinity, and -Infinity
     return typeof instance === 'number' && isFinite(instance) // eslint-disable-line no-restricted-globals
   },
 
-  integer: function testInteger(instance) {
+  Integer: function testInteger(instance) {
     return (typeof instance === 'number') && instance % 1 === 0
   },
 
-  boolean: function testBoolean(instance) {
+  Boolean: function testBoolean(instance) {
     return typeof instance === 'boolean'
   },
 
-  array: function testArray(instance) {
+  Array: function testArray(instance) {
     return instance instanceof Array
   },
 
-  null: function testNull(instance) {
+  Null: function testNull(instance) {
     return instance === null
   },
 
-  date: function testDate(instance) {
+  Date: function testDate(instance) {
     return instance instanceof Date
   },
 
@@ -39,7 +39,7 @@ const types = {
   ObjectId: function testObjectId(instance) {
       return instance && (typeof instance) === 'object' && instance._bsontype === 'ObjectID';
   },
-  object: function testObject(instance) {
+  Object: function testObject(instance) {
     return instance && (typeof instance) === 'object' && !(instance instanceof Array) && !(instance instanceof Date)
   },
 }
