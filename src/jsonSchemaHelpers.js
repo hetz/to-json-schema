@@ -3,32 +3,32 @@
 // content of this file is extracted from jsonschema source
 
 const types = {
-  String: function testString(instance) {
+  string: function testString(instance) {
     return typeof instance === 'string'
   },
 
-  Number: function testNumber(instance) {
+  number: function testNumber(instance) {
     // isFinite returns false for NaN, Infinity, and -Infinity
     return typeof instance === 'number' && isFinite(instance) // eslint-disable-line no-restricted-globals
   },
 
-  Integer: function testInteger(instance) {
+  integer: function testInteger(instance) {
     return (typeof instance === 'number') && instance % 1 === 0
   },
 
-  Boolean: function testBoolean(instance) {
+  boolean: function testBoolean(instance) {
     return typeof instance === 'boolean'
   },
 
-  Array: function testArray(instance) {
+  array: function testArray(instance) {
     return instance instanceof Array
   },
 
-  Null: function testNull(instance) {
+  null: function testNull(instance) {
     return instance === null
   },
 
-  Date: function testDate(instance) {
+  date: function testDate(instance) {
     return instance instanceof Date
   },
 
@@ -39,7 +39,7 @@ const types = {
   ObjectId: function testObjectId(instance) {
       return instance && (typeof instance) === 'object' && instance._bsontype === 'ObjectID';
   },
-  Object: function testObject(instance) {
+  object: function testObject(instance) {
     return instance && (typeof instance) === 'object' && !(instance instanceof Array) && !(instance instanceof Date)
   },
 }
@@ -62,8 +62,8 @@ const FORMAT_REGEXPS = {
 
   alpha: /^[a-zA-Z]+$/,
   alphanumeric: /^[a-zA-Z0-9]+$/,
-  'utc-millisec': input =>
-    (typeof input === 'string') && parseFloat(input) === parseInt(input, 10) && !isNaN(input), // eslint-disable-line no-restricted-globals
+  // 'utc-millisec': input =>
+  //   (typeof input === 'string') && parseFloat(input) === parseInt(input, 10) && !isNaN(input), // eslint-disable-line no-restricted-globals
   regex /* istanbul ignore next: not supporting regex right now */ (input) { // eslint-disable-line space-before-function-paren
     let result = true
     try {
